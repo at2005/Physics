@@ -81,6 +81,11 @@ class PointMass {
 
 		}
 
+		
+		void set_break_cond(bool (*bc)(PointMass*)) {
+			(*break_cond)(PointMass*) = (*bc);
+		} 
+		
 		bool breaking_condition() {
 			if(this->velocity.y >= 4.0) return true;
 			return false;
@@ -94,44 +99,48 @@ class PointMass {
 	float true_mass;
 	Vec3 coords; 
 	Vec3 velocity; 
+	
+	bool (*break_cond)(PointMass*);
 
 	double timestep;
 };
 
 
 
+double random_force(double time) {
+	// just some random force to test motion of particles
+	return time * time * 3 * sqrt(time) + time * 12 - 1/(2*time);		
+
+}
 
 int main() {
 	
 
 	// acrobatic frog
-
 	Vec3 point = Vec3(0,0,0);
 	PointMass m = PointMass(12.3e-3,point, false, Vec3(0, 0, 0)); 
 	double time = 0.0;
 	
-	Vec3 ground_force = Vec3(0, (m.rest_mass * 4000) /*- (m.rest_mass * 9.8)*/, 0);
+	Vec3 ground_force = Vec3(0, (m.rest_mass * 4009.8) /*- (m.rest_mass * 9.8)*/, 0);
 	Vec3 gravity = Vec3(0, m.rest_mass * -9.8, 0);
 	Vec3 total_force = ground_force + gravity;
 	
-	double weight = m.rest_mass * 9.8;
-	double alt_force_mag = weight * (4000/9.8 + 1.0);
+//	double weight = m.rest_mass * 9.8;
+//	double alt_force_mag = weight * (4000/9.8 + 1.0);
 
-	Vec3 alt_force = Vec3(0, alt_force_mag, 0) + gravity; 
+//	Vec3 alt_force = Vec3(0, alt_force_mag, 0) + gravity; 
 
 	while(true) {
 		if(time >= 1e-3) break;
-		m.change_momentum(alt_force);
+		m.change_momentum(total_force);
 		m.step();
 		time += m.timestep;
-//		cout << m.true_mass << endl;
-		
 
 	}
 	
-		cout << m.velocity.y << "\n";
+	cout << "Final Velocity: " << m.velocity.y << "\n";
+	cout << "Total time: " << time << " seconds\n";
 
-	cout << "Total time: " << time << "\n";
 	return 0;
 
 
