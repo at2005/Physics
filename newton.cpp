@@ -16,7 +16,6 @@ class Vec3 {
 		}
 	
 		Vec3() {
-
 			this->x = 0;
 			this->y = 0; 
 			this->z = 0;
@@ -44,8 +43,6 @@ class Vec3 {
 		double y;
 		double z;
 
-
-
 };
 
 
@@ -57,15 +54,14 @@ class PointMass {
 			this->coords = coords;
 			this->rest_mass = rest_mass;
 			this->velocity = init_velocity; 
-
+			
 			this->true_mass = is_relativistic ? rest_mass / sqrt(1.0 - (pow(this->velocity.get_magnitude(), 2) / pow(C, 2))) : rest_mass;
 			// hard-coded timestep for now
-			this->timestep = 1e-11;
+			this->timestep = 1e-8;
 			
 			
 
 		}
-
 
 		void change_momentum(Vec3 force) {
 			this->velocity.x += this->timestep * (force.x / this->true_mass);
@@ -81,11 +77,11 @@ class PointMass {
 
 		}
 
-		
+	/*	
 		void set_break_cond(bool (*bc)(PointMass*)) {
 			(*break_cond)(PointMass*) = (*bc);
 		} 
-		
+	*/	
 		bool breaking_condition() {
 			if(this->velocity.y >= 4.0) return true;
 			return false;
@@ -113,18 +109,27 @@ double random_force(double time) {
 
 }
 
+bool within_bounds(double val, double centre, double bound) {
+	if(val > (centre - bound) and val < (centre + bound)) return true;
+	return false;
+
+}
+
 int main() {
 	
 
 	// acrobatic frog
 	Vec3 point = Vec3(0,0,0);
-	PointMass m = PointMass(12.3e-3,point, false, Vec3(0, 0, 0)); 
+	PointMass m = PointMass(12.3e-6,point, false, Vec3(0, 0, 0));
 	double time = 0.0;
-	
-	Vec3 ground_force = Vec3(0, (m.rest_mass * 4009.8) /*- (m.rest_mass * 9.8)*/, 0);
+		
+	Vec3 ground_force = Vec3(0, 0.0493, 0);
+
+//	Vec3 ground_force = Vec3(0, (m.rest_mass * 4009.8) - (m.rest_mass * 9.8), 0);
+//	Vec3 ground_force = Vec3(0,49.3,0);
 	Vec3 gravity = Vec3(0, m.rest_mass * -9.8, 0);
 	Vec3 total_force = ground_force + gravity;
-	
+		
 //	double weight = m.rest_mass * 9.8;
 //	double alt_force_mag = weight * (4000/9.8 + 1.0);
 
@@ -135,7 +140,6 @@ int main() {
 		m.change_momentum(total_force);
 		m.step();
 		time += m.timestep;
-
 	}
 	
 	cout << "Final Velocity: " << m.velocity.y << "\n";
